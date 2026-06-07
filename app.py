@@ -1,5 +1,5 @@
-
 import os
+import asyncio
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -23,7 +23,6 @@ async def statistik(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📅 Aktif 7 Hari : {active_7_days}
 🔴 Tidak Aktif >30 Hari : {inactive_30_days}
 """
-
     await update.message.reply_text(text)
 
 async def track_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -38,14 +37,10 @@ def home():
     return "Bot is running"
 
 @app.route("/webhook", methods=["POST"])
-async def webhook():
+def webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    await telegram_app.process_update(update)
+    asyncio.run(telegram_app.process_update(update))
     return "OK"
 
 if __name__ == "__main__":
-    telegram_app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 10000)),
-        webhook_url=os.environ.get("WEBHOOK_URL")
-    )
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
